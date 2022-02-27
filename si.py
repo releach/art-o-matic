@@ -104,7 +104,7 @@ def app():
     with st.container():
         st.image(artist["workRepresentation"])
         st.write("[Linked open data about this work](%s)" % lodlink)
-        st.write("[Search the catalog for this work](%s)" % worklink)
+        st.write("[Search the Smithsonian American Art Museum catalog for this work](%s)" % worklink)
         st.markdown(
             """<hr style="height:8px;border:none;color:#333;background-color:#333;" /> """,
             unsafe_allow_html=True,
