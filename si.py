@@ -58,7 +58,7 @@ def get_si_data():
     data = r.json()
     return data
 
-
+@st.cache(suppress_st_warning=True)
 def construct_list():
     data = get_si_data()
     artists = []
@@ -84,7 +84,7 @@ def construct_list():
 
 
 def app():
-    st.set_page_config(page_title="Art-O-Matic", page_icon="🖼️")
+    st.set_page_config(page_title="Art-O-Matic", page_icon="🖼️", layout="wide")
     st.markdown(
         "<h1 style='font-size: 4em; font-family: Verdana, Geneva, sans-serif;'>Art-O-Matic</h1>",
         unsafe_allow_html=True,
