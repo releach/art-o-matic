@@ -33,7 +33,7 @@ def get_si_data():
             cidoc:P1_is_identified_by ?displayName .
     ?displayName rdfs:label ?label .
 
-    OPTIONAL { ?artist edan:PE_has_note_artistbio ?shortBio . }
+    OPTIONAL { ?artist edan:PE_has_note_luceartistbio ?shortBio . }
 
     OPTIONAL {?artist cidoc:P100i_died_in ?P100i_died_in .
     ?P100i_died_in cidoc:P4_has_time-span ?deathSpan .
@@ -88,9 +88,9 @@ def construct_list():
     return artists
 
 def app():
-    st.set_page_config(page_title="Art-O-Matic", page_icon="🖼️", layout="wide")
+    st.set_page_config(page_title="ART-O-MATIC", page_icon="🖼️")
     st.markdown(
-        "<h1 style='font-size: 3em; font-family: Verdana, Geneva, sans-serif;'>Art-O-Matic</h1>",
+        "<h1 style='font-size: 3em; font-family: Verdana, Geneva, sans-serif;'>ART-O-MATIC</h1>",
         unsafe_allow_html=True,
     )
     st.write("Refresh the page for more art.")
