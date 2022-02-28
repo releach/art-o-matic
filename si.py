@@ -1,5 +1,6 @@
 import random
 import re
+import urllib.parse
 from collections import OrderedDict
 
 import requests
@@ -12,7 +13,6 @@ CLEANR = re.compile("<.*?>")
 def cleanhtml(raw_text):
     cleantext = re.sub(CLEANR, "", raw_text)
     return cleantext
-
 
 
 @st.cache(suppress_st_warning=True)
@@ -30,20 +30,21 @@ def get_si_data():
     SELECT ?artist (SAMPLE(?label) as ?sampleLabel) ?image ?shortBio ?deathDate ?birthDate ?nationalityLabel ?workRepresentation ?work
     WHERE {
     ?artist edan:PE_has_main_representation ?image ;
-            edan:PE_has_note_artistbio ?shortBio ;
             cidoc:P1_is_identified_by ?displayName .
     ?displayName rdfs:label ?label .
 
-    ?artist cidoc:P100i_died_in ?P100i_died_in .
+    OPTIONAL { ?artist edan:PE_has_note_artistbio ?shortBio . }
+
+    OPTIONAL {?artist cidoc:P100i_died_in ?P100i_died_in .
     ?P100i_died_in cidoc:P4_has_time-span ?deathSpan .
-    ?deathSpan cidoc:P82_at_some_time_within ?deathDate .
+    ?deathSpan cidoc:P82_at_some_time_within ?deathDate } .
 
-    ?artist cidoc:P98i_was_born ?P98i_was_born .
+    OPTIONAL {?artist cidoc:P98i_was_born ?P98i_was_born .
     ?P98i_was_born cidoc:P4_has_time-span ?birthSpan .
-    ?birthSpan cidoc:P82_at_some_time_within ?birthDate .
+    ?birthSpan cidoc:P82_at_some_time_within ?birthDate } .
 
-    ?artist cidoc:P107i_is_current_or_former_member_of ?nationality .
-    ?nationality skos:prefLabel ?nationalityLabel .
+    OPTIONAL {?artist cidoc:P107i_is_current_or_former_member_of ?nationality .
+    ?nationality skos:prefLabel ?nationalityLabel } .
 
     ?production cidoc:P14_carried_out_by ?artist .
     ?production cidoc:P108_has_produced ?work .
@@ -58,22 +59,26 @@ def get_si_data():
     data = r.json()
     return data
 
+
 @st.cache(suppress_st_warning=True)
 def construct_list():
     data = get_si_data()
     artists = []
     for item in data["results"]["bindings"]:
-        shortBio = cleanhtml(item["shortBio"]["value"])
+        shortBio = cleanhtml(item["shortBio"]["value"]) if "shortBio" in item else ""
         artists.append(
             OrderedDict(
                 {
                     "uri": item["artist"]["value"],
                     "label": item["sampleLabel"]["value"],
                     "image": item["image"]["value"],
-                    "birthDate": item["birthDate"]["value"],
-                    "deathDate": item["deathDate"]["value"],
+                    "birthDate": item["birthDate"]["value"]
+                    if "birthDate" in item else "",
+                    "deathDate": item["deathDate"]["value"]
+                    if "deathDate" in item else "",
                     "shortBio": shortBio,
-                    "nationalityLabel": item["nationalityLabel"]["value"],
+                    "nationalityLabel": item["nationalityLabel"]["value"]
+                    if "nationalityLabel" in item else "",
                     "workRepresentation": item["workRepresentation"]["value"],
                     "work": item["work"]["value"],
                 }
@@ -82,41 +87,44 @@ def construct_list():
 
     return artists
 
-
 def app():
     st.set_page_config(page_title="Art-O-Matic", page_icon="🖼️", layout="wide")
     st.markdown(
-        "<h1 style='font-size: 4em; font-family: Verdana, Geneva, sans-serif;'>Art-O-Matic</h1>",
+        "<h1 style='font-size: 3em; font-family: Verdana, Geneva, sans-serif;'>Art-O-Matic</h1>",
         unsafe_allow_html=True,
     )
     st.write("Refresh the page for more art.")
     list = construct_list()
     artist = random.choice(list)
+    artistName = artist["label"]
+    cleanArtistName = urllib.parse.quote(artistName)
     birthDate = artist["birthDate"][0:4]
     deathDate = artist["deathDate"]
     lifeRange = f"{birthDate} - {deathDate}"
-    artistnat = artist["nationalityLabel"]
-    artistDetails = f"{lifeRange}   *   {artistnat}"
-    lodlink = artist["work"]
-    workid = artist["work"].partition("http://edan.si.edu/saam/id/object/")[2]
-    worklink = f"https://americanart.si.edu/search?query={workid}"
+    artistNat = artist["nationalityLabel"]
+    artistDetails = f"{lifeRange}   *   {artistNat}"
+    lodLink = artist["work"]
+    workId = artist["work"].partition("http://edan.si.edu/saam/id/object/")[2]
+    workLink = f"https://americanart.si.edu/search?query={workId}"
+    artistLink = f"https://americanart.si.edu/search?query={cleanArtistName}&f[0]=content_type:person"
 
     with st.container():
         st.image(artist["workRepresentation"])
-        st.write("[Linked open data about this work](%s)" % lodlink)
-        st.write("[Search the Smithsonian American Art Museum catalog for this work](%s)" % worklink)
+        st.write("[Linked open data about this work](%s)" % lodLink)
+        st.write("[Search the Smithsonian American Art Museum catalog for this work](%s)" % workLink)
         st.markdown(
             """<hr style="height:8px;border:none;color:#333;background-color:#333;" /> """,
             unsafe_allow_html=True,
         )
     with st.container():
-        st.header(artist["label"])
+        st.header(artistName)
         st.text(artistDetails)
         col3, col4 = st.columns(2)
         with col3:
             st.image(artist["image"], use_column_width="always")
         with col4:
             st.markdown(artist["shortBio"])
+            st.write("[Search the Smithsonian American Art Museum catalog for this artist](%s)" % artistLink)
 
 
 app()
