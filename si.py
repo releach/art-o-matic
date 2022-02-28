@@ -39,7 +39,8 @@ def construct_list():
                 {
                     "uri": item["artist"]["value"],
                     "label": item["sampleLabel"]["value"],
-                    "image": item["image"]["value"],
+                    "image": item["image"]["value"]
+                    if "image" in item else "https://americanart.si.edu/themes/custom/muse3/images/image-not-available.png",
                     "birthDate": item["birthDate"]["value"]
                     if "birthDate" in item else "",
                     "deathDate": item["deathDate"]["value"]
@@ -77,10 +78,11 @@ def app():
     workId = artist["work"].partition("http://edan.si.edu/saam/id/object/")[2]
     workLink = f"https://americanart.si.edu/search?query={workId}"
     artistLink = f"https://americanart.si.edu/search?query={cleanArtistName}&f[0]=content_type:person"
+    lodArtist = artist["uri"]
+    lodWork = artist["work"]
 
     with st.container():
         st.image(artist["workRepresentation"])
-        st.markdown("[Search the Smithsonian American Art Museum catalog for this work](%s)" % workLink)
         st.markdown(
             """<hr style="height:8px;border:none;color:#333;background-color:#333;" /> """,
             unsafe_allow_html=True,
@@ -91,10 +93,24 @@ def app():
         col1, col2 = st.columns(2)
         with col2:
             st.markdown(artist["shortBio"])
-            st.write("[Search the Smithsonian American Art Museum catalog for this artist](%s)" % artistLink)
         with col1:
             st.image(artist["image"], use_column_width="always")
 
+        st.markdown(
+            """<hr style="height:8px;border:none;color:#333;background-color:#333;" /> """,
+            unsafe_allow_html=True,
+        )
+        st.header("Links")
+        st.markdown("_Data Source: Smithsonian American Art Museum_")
+        st.markdown("The work: [Linked open data](%s)  *  [Search the SAAM catalog](%s)" % (lodWork, workLink))
+        st.markdown("The artist: [Linked open data](%s)  *  [Search the SAAM catalog](%s)" % (lodArtist, artistLink))
 
+    hide_streamlit_style = """
+                <style>
+                #MainMenu {visibility: hidden;}
+                footer {visibility: hidden;}
+                </style>
+                """
+    st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 app()

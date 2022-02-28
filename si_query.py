@@ -9,7 +9,7 @@ def si_works_query():
     WHERE {
     ?artist cidoc:P1_is_identified_by ?displayName .
     ?displayName rdfs:label ?label .
-    ?artist edan:PE_has_main_representation ?image .
+    OPTIONAL {?artist edan:PE_has_main_representation ?image . }
     OPTIONAL { ?artist edan:PE_has_note_luceartistbio ?shortBio . }
 
     OPTIONAL {?artist cidoc:P100i_died_in ?P100i_died_in .
