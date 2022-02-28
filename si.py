@@ -40,7 +40,7 @@ def construct_list():
                     "uri": item["artist"]["value"],
                     "label": item["sampleLabel"]["value"],
                     "image": item["image"]["value"]
-                    if "image" in item else "https://americanart.si.edu/themes/custom/muse3/images/image-not-available.png",
+                    if "image" in item else "",
                     "birthDate": item["birthDate"]["value"]
                     if "birthDate" in item else "",
                     "deathDate": item["deathDate"]["value"]
@@ -91,11 +91,15 @@ def app():
         st.header(artistName)
         st.text(artistDetails)
         col1, col2 = st.columns(2)
-        with col2:
-            st.markdown(artist["shortBio"])
-        with col1:
-            st.image(artist["image"], use_column_width="always")
-
+        
+        if artist["image"] != "":
+            with col1:
+                st.image(artist["image"], use_column_width="always")
+            with col2:
+                st.markdown(artist["shortBio"])
+        else:
+            with col2:
+                st.markdown(artist["shortBio"])
         st.markdown(
             """<hr style="height:8px;border:none;color:#333;background-color:#333;" /> """,
             unsafe_allow_html=True,
@@ -107,7 +111,6 @@ def app():
 
     hide_streamlit_style = """
                 <style>
-                #MainMenu {visibility: hidden;}
                 footer {visibility: hidden;}
                 </style>
                 """
