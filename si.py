@@ -16,7 +16,7 @@ def cleanhtml(raw_text):
     return cleantext
 
 
-@st.cache(suppress_st_warning=True)
+@st.cache(suppress_st_warning=True, show_spinner=False)
 def get_si_data():
     # Smithsonian Linked Data SPARQL endpoint URL
     url = "http://edan.si.edu/saam/sparql"
@@ -28,7 +28,7 @@ def get_si_data():
     return data
 
 
-@st.cache(suppress_st_warning=True)
+@st.cache(suppress_st_warning=True, show_spinner=False)
 def construct_list():
     data = get_si_data()
     artists = []
@@ -53,7 +53,6 @@ def construct_list():
                 }
             )
         )
-
     return artists
 
 def app():
@@ -63,57 +62,58 @@ def app():
         unsafe_allow_html=True,
     )
     st.write("Refresh the page for more art.")
-    list = construct_list()
-    artist = random.choice(list)
-    artistName = artist["label"]
-    cleanArtistName = urllib.parse.quote(artistName)
-    birthDate = artist["birthDate"][0:4]
-    deathDate = artist["deathDate"]
-    lifeRange = f"{birthDate} - {deathDate}"
-    artistNat = artist["nationalityLabel"]
-    if birthDate != "":
-        artistDetails = f"{lifeRange}   *   {artistNat}"
-    else:
-        artistDetails = artistNat
-    workId = artist["work"].partition("http://edan.si.edu/saam/id/object/")[2]
-    workLink = f"https://americanart.si.edu/search?query={workId}"
-    artistLink = f"https://americanart.si.edu/search?query={cleanArtistName}&f[0]=content_type:person"
-    lodArtist = artist["uri"]
-    lodWork = artist["work"]
-
-    with st.container():
-        st.image(artist["workRepresentation"])
-        st.markdown(
-            """<hr style="height:8px;border:none;color:#333;background-color:#333;" /> """,
-            unsafe_allow_html=True,
-        )
-    with st.container():
-        st.header(artistName)
-        st.text(artistDetails)
-        col1, col2 = st.columns(2)
-        
-        if artist["image"] != "":
-            with col1:
-                st.image(artist["image"], use_column_width="always")
-            with col2:
-                st.markdown(artist["shortBio"])
+    with st.spinner(text="Loading ..."):
+        list = construct_list()
+        artist = random.choice(list)
+        artistName = artist["label"]
+        cleanArtistName = urllib.parse.quote(artistName)
+        birthDate = artist["birthDate"][0:4]
+        deathDate = artist["deathDate"]
+        lifeRange = f"{birthDate} - {deathDate}"
+        artistNat = artist["nationalityLabel"]
+        if birthDate != "":
+            artistDetails = f"{lifeRange}   *   {artistNat}"
         else:
-            with col2:
-                st.markdown(artist["shortBio"])
-        st.markdown(
-            """<hr style="height:8px;border:none;color:#333;background-color:#333;" /> """,
-            unsafe_allow_html=True,
-        )
-        st.header("Links")
-        st.markdown("_Data Source: Smithsonian American Art Museum_")
-        st.markdown("The work: [Linked open data](%s)  *  [Search the SAAM catalog](%s)" % (lodWork, workLink))
-        st.markdown("The artist: [Linked open data](%s)  *  [Search the SAAM catalog](%s)" % (lodArtist, artistLink))
+            artistDetails = artistNat
+        workId = artist["work"].partition("http://edan.si.edu/saam/id/object/")[2]
+        workLink = f"https://americanart.si.edu/search?query={workId}"
+        artistLink = f"https://americanart.si.edu/search?query={cleanArtistName}&f[0]=content_type:person"
+        lodArtist = artist["uri"]
+        lodWork = artist["work"]
 
-    hide_streamlit_style = """
-                <style>
-                footer {visibility: hidden;}
-                </style>
-                """
-    st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+        with st.container():
+            st.image(artist["workRepresentation"])
+            st.markdown(
+                """<hr style="height:8px;border:none;color:#333;background-color:#333;" /> """,
+                unsafe_allow_html=True,
+            )
+        with st.container():
+            st.header(artistName)
+            st.text(artistDetails)
+            col1, col2 = st.columns(2)
+
+            if artist["image"] != "":
+                with col1:
+                    st.image(artist["image"], use_column_width="always")
+                with col2:
+                    st.markdown(artist["shortBio"])
+            else:
+                with col2:
+                    st.markdown(artist["shortBio"])
+            st.markdown(
+                """<hr style="height:8px;border:none;color:#333;background-color:#333;" /> """,
+                unsafe_allow_html=True,
+            )
+            st.header("Links")
+            st.markdown("_Data Source: Smithsonian American Art Museum_")
+            st.markdown("The work: [Linked open data](%s)  *  [Search the SAAM catalog](%s)" % (lodWork, workLink))
+            st.markdown("The artist: [Linked open data](%s)  *  [Search the SAAM catalog](%s)" % (lodArtist, artistLink))
+
+        hide_streamlit_style = """
+                    <style>
+                    footer {visibility: hidden;}
+                    </style>
+                    """
+        st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 app()
