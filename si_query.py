@@ -28,6 +28,6 @@ def si_works_query():
     ?work cidoc:P138i_has_representation ?workRepresentation
     }
     GROUP BY ?artist ?image ?shortBio ?deathDate ?birthDate ?nationalityLabel ?workRepresentation ?work
-    LIMIT 7000
+    LIMIT 5000
     """
     return query
