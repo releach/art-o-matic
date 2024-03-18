@@ -16,7 +16,7 @@ def cleanhtml(raw_text):
     return cleantext
 
 
-@st.cache_data
+@st.cache
 def get_si_data():
     # Smithsonian Linked Data SPARQL endpoint URL
     url = "http://edan.si.edu/saam/sparql"
