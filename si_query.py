@@ -29,6 +29,6 @@ def si_works_query():
     }
     GROUP BY ?artist ?image ?shortBio ?deathDate ?birthDate ?nationalityLabel ?workRepresentation ?work
     ORDER BY RAND()
-    LIMIT 10
+    LIMIT 100
     """
     return query
