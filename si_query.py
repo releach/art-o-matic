@@ -28,6 +28,7 @@ def si_works_query():
     ?work cidoc:P138i_has_representation ?workRepresentation
     }
     GROUP BY ?artist ?image ?shortBio ?deathDate ?birthDate ?nationalityLabel ?workRepresentation ?work
-    LIMIT 5000
+    ORDER BY RAND()
+    LIMIT 10
     """
     return query
